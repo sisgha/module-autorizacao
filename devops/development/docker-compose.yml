@@ -1,12 +1,12 @@
 services:
-  sisgea-module-autenticacao:
+  sisgea-module-autorizacao:
     image: node:18
     user: node
     command: sh -c "tail -f /dev/null"
-    container_name: sisgea-module-autenticacao
+    container_name: sisgea-module-autorizacao
     working_dir: /code
     depends_on:
-      - sisgea-module-autenticacao-db
+      - sisgea-module-autorizacao-db
     networks:
       - sisgea-net
     ports:
@@ -17,11 +17,11 @@ services:
     env_file:
       - .env
 
-  sisgea-module-autenticacao-db:
+  sisgea-module-autorizacao-db:
     image: bitnami/postgresql:15
-    container_name: sisgea-module-autenticacao-db
+    container_name: sisgea-module-autorizacao-db
     volumes:
-      - 'sisgea-module-autenticacao-db-data:/bitnami/postgresql'
+      - 'sisgea-module-autorizacao-db-data:/bitnami/postgresql'
     networks:
       - sisgea-net
     ports:
@@ -34,4 +34,4 @@ networks:
     external: true
 
 volumes:
-  sisgea-module-autenticacao-db-data:
+  sisgea-module-autorizacao-db-data:
