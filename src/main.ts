@@ -1,6 +1,6 @@
+import { ServerCredentials } from '@grpc/grpc-js';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { join } from 'path';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -10,9 +10,10 @@ async function bootstrap() {
     transport: Transport.GRPC,
 
     options: {
-      package: 'autorizacao',
-      protoPath: join(__dirname, 'infrastructure/app/autorizacao/autorizacao.proto'),
+      package: 'sisgea.autorizacao',
+      protoPath: require.resolve('@sisgea/autorizacao-client/proto/sisgea.autorizacao.proto'),
       url: url,
+      credentials: ServerCredentials.createInsecure(),
     },
   });
 
