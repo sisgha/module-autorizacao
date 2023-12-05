@@ -3,7 +3,7 @@ import { Message } from 'amqplib';
 import { AckOrNack, SubscriberSessionAsPromised } from 'rascal';
 import { DataSource } from 'typeorm';
 import { DbEventModel } from '../../domain';
-import { DatabaseContext } from '../database-context/database-context';
+import { DatabaseContext } from '../DatabaseContext/DatabaseContext';
 import { APP_DATA_SOURCE_TOKEN } from '../database/tokens/APP_DATA_SOURCE_TOKEN';
 import { MessageBrokerContainerService } from '../message-broker/message-broker-container.service';
 import { DbEventAction } from './domain/DbEventAction';

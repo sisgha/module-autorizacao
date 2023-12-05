@@ -36,3 +36,14 @@ export const checkIfMixedStatementNeedsDatabaseResolution = (mixedStatement: IAu
 
   return false;
 };
+export const extractAliasesMappingsFromMixedStatement = (mixedStatement: IAuthorizationPolicyMixedStatement, resource: string) => {
+  const aliasesMappings: Map<string, string> = new Map<string, string>();
+
+  aliasesMappings.set(mixedStatement.alias, resource);
+
+  for (const inner_join of mixedStatement.inner_joins) {
+    aliasesMappings.set(inner_join.b_alias, inner_join.b_resource);
+  }
+
+  return aliasesMappings;
+};

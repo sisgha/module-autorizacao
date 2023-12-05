@@ -1,3 +1,4 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import {
   IAuthorizationPolicyCondition,
   IAuthorizationPolicyConditionValueAnd,
@@ -14,14 +15,25 @@ import {
   IAuthorizationPolicyConditionValueResourceAttribute,
   IAuthorizationPolicyConditionValueTrue,
 } from '../../../domain';
+import { IDatabaseAppResource } from '../../database/interfaces/IDatabaseAppResource';
+import { getResourceAttributeProjection } from './getResourceAttributeProjection';
 
 export class AuthorizationPolicyConditionInterpreterTypeORM {
   #params_counter: number = 0;
 
   #params = new Map<string, any>();
 
-  constructor(initialParamsCounter = 0) {
+  constructor(
+    //
+    private databaseAppResources: IDatabaseAppResource[] = [],
+    private aliasesMappings: Map<string, string> = new Map<string, string>(),
+    initialParamsCounter = 0,
+  ) {
     this.#params_counter = initialParamsCounter;
+  }
+
+  private getResourceAttributeProjection(alias: string, attribute: string) {
+    return getResourceAttributeProjection(alias, attribute, this.databaseAppResources, this.aliasesMappings);
   }
 
   private attachParam(value: any) {
@@ -36,7 +48,7 @@ export class AuthorizationPolicyConditionInterpreterTypeORM {
 
   get params() {
     return {
-      ...this.#params,
+      ...Object.fromEntries(this.#params),
     };
   }
 
@@ -55,11 +67,11 @@ export class AuthorizationPolicyConditionInterpreterTypeORM {
   }
 
   value_resource_attribute(node: IAuthorizationPolicyConditionValueResourceAttribute) {
-    return `${node.resource_alias}.${node.attribute}`;
+    return this.getResourceAttributeProjection(node.resource_alias, node.attribute);
   }
 
   value_not(node: IAuthorizationPolicyConditionValueNot) {
-    return `NOT (${this.generic(node.value)})`;
+    return `NOT ${this.generic(node.value)}`;
   }
 
   value_eq(node: IAuthorizationPolicyConditionValueEq) {
@@ -83,15 +95,15 @@ export class AuthorizationPolicyConditionInterpreterTypeORM {
   }
 
   value_gte(node: IAuthorizationPolicyConditionValueGreaterThanOrEqual) {
-    return `(${this.generic(node.left)}) >= (${this.generic(node.right)})`;
+    return `${this.generic(node.left)}) >= (${this.generic(node.right)})`;
   }
 
   value_lt(node: IAuthorizationPolicyConditionValueLessThan) {
-    return `(${this.generic(node.left)}) < (${this.generic(node.right)})`;
+    return `${this.generic(node.left)}) < (${this.generic(node.right)})`;
   }
 
   value_lte(node: IAuthorizationPolicyConditionValueLessThanOrEqual) {
-    return `(${this.generic(node.left)}) <= (${this.generic(node.right)})`;
+    return `${this.generic(node.left)}) <= (${this.generic(node.right)})`;
   }
 
   generic(node: IAuthorizationPolicyCondition) {
@@ -149,7 +161,7 @@ export class AuthorizationPolicyConditionInterpreterTypeORM {
       }
 
       default: {
-        return 'FALSE';
+        throw new InternalServerErrorException('Not implemented');
       }
     }
   }
@@ -157,18 +169,6 @@ export class AuthorizationPolicyConditionInterpreterTypeORM {
   interpret(node: IAuthorizationPolicyCondition) {
     const sql = this.generic(node);
     const params = this.params;
-
-    return {
-      sql,
-      params,
-    };
-  }
-
-  static interpret(node: IAuthorizationPolicyCondition) {
-    const interpreter = new AuthorizationPolicyConditionInterpreterTypeORM();
-
-    const sql = interpreter.generic(node);
-    const params = interpreter.params;
 
     return {
       sql,
