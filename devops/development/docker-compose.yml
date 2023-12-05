@@ -4,7 +4,7 @@ services:
     user: node
     command: sh -c "tail -f /dev/null"
     container_name: sisgea-module-autorizacao
-    working_dir: /code
+    working_dir: /sisgea/env-dev/modules/back-end/module-autorizacao
     depends_on:
       - sisgea-module-autorizacao-db
     networks:
@@ -13,7 +13,8 @@ services:
       - 127.128.30.13:3013:3013
       - 127.128.30.13:9229:9229
     volumes:
-      - ../../:/code
+      - ../../../../../libs:/sisgea/env-dev/libs
+      - ../../:/sisgea/env-dev/modules/back-end/module-autorizacao
     env_file:
       - .env
 
