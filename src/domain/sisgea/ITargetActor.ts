@@ -14,7 +14,7 @@ export type ITargetActorSystem = {
 
 export type ITargetActorUser = {
   kind: ITargetActorKind.USER;
-  userId: string;
+  usuarioId: string;
 };
 
 export type ITargetActor = ITargetActorAnonymous | ITargetActorSystem | ITargetActorUser;

@@ -5,5 +5,5 @@ export interface IAuthorizationPolicy {
 
   description: string;
 
-  build(ctx: IAuthorizationPolicyBuildContext): void;
+  build(ctx: IAuthorizationPolicyBuildContext): void | Promise<void>;
 }
