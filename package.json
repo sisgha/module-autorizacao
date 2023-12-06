@@ -41,6 +41,7 @@
     "amqplib": "^0.10.3",
     "lodash": "^4.17.21",
     "pg": "^8.11.3",
+    "pg-query-stream": "^4.5.3",
     "rascal": "^17.0.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

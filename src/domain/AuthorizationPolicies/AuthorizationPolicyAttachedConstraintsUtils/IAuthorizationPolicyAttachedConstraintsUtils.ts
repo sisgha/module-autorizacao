@@ -3,7 +3,7 @@ import { ITargetActor } from '../../sisgea';
 import { IAuthorizationPolicyAttachedConstraint } from '../AuthorizationPolicyAttachedConstraint';
 
 export type IFilterAttachedConstraintsForTargetActorDependencies = {
-  checkRoles(roles: string[], targetActor: ITargetActor): Promise<boolean>;
+  checkRoles(targetActor: ITargetActor, roles: string[]): Promise<boolean>;
 };
 
 export type IFilterAttachedConstraintsForTargetActor = (

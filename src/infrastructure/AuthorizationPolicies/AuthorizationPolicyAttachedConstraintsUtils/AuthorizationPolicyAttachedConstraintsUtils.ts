@@ -16,7 +16,7 @@ export const filterAttachedConstraintsForTargetActor: IFilterAttachedConstraints
       }
 
       case IAuthorizationPolicyAttachedConstraintKind.ROLES: {
-        const hasRole = await deps.checkRoles(attachedConstraint.roles, targetActor);
+        const hasRole = await deps.checkRoles(targetActor, attachedConstraint.roles);
 
         if (hasRole) {
           yield attachedConstraint;

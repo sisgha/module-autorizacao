@@ -1,5 +1,7 @@
 import { AbilityBuilder, createMongoAbility } from '@casl/ability';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { AllowedResourceResponse } from '@sisgea/autorizacao-client';
+import { get } from 'lodash';
 import { extractAliasesMappingsFromMixedStatement } from 'src/infrastructure/AuthorizationPolicies/AuthorizationPolicyConstraintAttachedStatementsMixer/AuthorizationPolicyConstraintAttachedStatementsMixerUtils';
 import {
   IAuthorizationPolicyConstraintStatementBuilderSpecialAction,
@@ -25,10 +27,8 @@ export class AuthorizationPoliciesService {
     private databaseService: DatabaseService,
   ) {}
 
-  async checkRoles(roles: string[], targetActor: ITargetActor) {
-    // TODO
-
-    console.log('TODO: checkRoles');
+  async checkRoles(targetActor: ITargetActor, roles: string[]) {
+    console.log('TODO: checkRoles', { targetActor, roles });
     return true;
   }
 
@@ -38,9 +38,7 @@ export class AuthorizationPoliciesService {
 
   private async getAuthorizationPoliciesHandler() {
     const authorizationPoliciesHandler = new AuthorizationPoliciesHandler();
-
     await authorizationPoliciesHandler.addPolicies(this.getPolicies());
-
     return authorizationPoliciesHandler;
   }
 
@@ -86,9 +84,8 @@ export class AuthorizationPoliciesService {
 
     const mixer = new AuthorizationPolicyConstraintAttachedStatementMixer();
     await mixer.addAttachedStatements(matchedAttachedStatements);
-    const mixedStatement = mixer.state;
 
-    return mixedStatement;
+    return mixer.state;
   }
 
   private async getResolution(targetActor: ITargetActor, action: string, resource: string, resourceId: string | null = null) {
@@ -150,7 +147,7 @@ export class AuthorizationPoliciesService {
     targetActor: ITargetActor,
     action: string,
     resource: string,
-    resourceId: string | null = null,
+    resourceIdJSON: string | null = null,
     mixedStatement: IAuthorizationPolicyMixedStatement,
   ) {
     const databaseContext = await this.databaseService.getDatabaseContextApp();
@@ -177,11 +174,13 @@ export class AuthorizationPoliciesService {
       qb.innerJoin(inner_join.b_resource, inner_join.b_alias, interpretedInnerJoin.sql, interpretedInnerJoin.params);
     }
 
-    if (resourceId !== null) {
-      const literalResourceId = JSON.parse(resourceId);
+    const literalResourceId = resourceIdJSON !== null ? JSON.parse(resourceIdJSON) : null;
 
+    if (literalResourceId !== null) {
       qb.andWhere(`${mixedStatement.alias}.id = :literalResourceId`, { literalResourceId });
     }
+
+    qb.select(`${mixedStatement.alias}.id`);
 
     return {
       strategy: 'db',
@@ -189,8 +188,8 @@ export class AuthorizationPoliciesService {
     } as const;
   }
 
-  async targetActorCan(targetActor: ITargetActor, action: string, resource: string, resourceId: string | null = null) {
-    const resolution = await this.getResolution(targetActor, action, resource, resourceId);
+  async targetActorCan(targetActor: ITargetActor, action: string, resource: string, resourceIdJson: string | null = null) {
+    const resolution = await this.getResolution(targetActor, action, resource, resourceIdJson);
 
     switch (resolution.strategy) {
       case 'db': {
@@ -206,6 +205,22 @@ export class AuthorizationPoliciesService {
       default: {
         return false;
       }
+    }
+  }
+
+  async *targetActorAllowedResources(targetActor: ITargetActor, action: string, resource: string): AsyncIterable<AllowedResourceResponse> {
+    const resolution = await this.getResolutionDatabase(targetActor, action, resource, null);
+
+    const stream = await resolution.qb.stream();
+
+    for await (const chunk of stream) {
+      const alias = 'row';
+
+      const allowedResourceResponse = <AllowedResourceResponse>{
+        resourceIdJson: JSON.stringify(get(chunk, `${alias}_id`)),
+      };
+
+      yield allowedResourceResponse;
     }
   }
 }

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthorizationPoliciesModules } from './application/modules/authorization-policies/authorization-policies.module';
-import { AutorizacaoModule } from './application/modules/autorizacao/autorizacao.module';
+import { SisgeaAutorizacaoModule } from './application/modules/sisgea-autorizacao/sisgea-autorizacao.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { DbEventsModule } from './infrastructure/db-events/db-events.module';
 import { EnvironmentConfigModule } from './infrastructure/environment-config';
@@ -17,7 +17,7 @@ import { MessageBrokerModule } from './infrastructure/message-broker/message-bro
     //
     AuthorizationPoliciesModules,
     //
-    AutorizacaoModule,
+    SisgeaAutorizacaoModule,
   ],
   providers: [
     //
