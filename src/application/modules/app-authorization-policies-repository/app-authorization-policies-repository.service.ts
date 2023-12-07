@@ -3,13 +3,14 @@ import {
   AuthorizationPoliciesManager,
   AuthorizationPolicyAttachedConstraintsHandler,
   AuthorizationPolicyConstraintAttachedStatementMixer,
+  IAuthorizationPolicyAttachedConstraint,
   IAuthorizationPolicyConstraintStatementBuilderSpecialAction,
   IAuthorizationPolicyConstraintStatementBuilderSpecialTarget,
 } from '@sisgea/authorization-policies-core';
-import { AllPolicies } from '../../app-authorization-policies-definitions/AllPolicies';
 import { ITargetActor } from '../../../domain';
-import { IFilterAttachedConstraintsForTargetActorDependencies } from '../../../infrastructure/authorization-policies/domain/IAuthorizationPolicyAttachedConstraintsUtils';
 import { filterAttachedConstraintsForTargetActor } from '../../../infrastructure/authorization-policies/AuthorizationPolicyAttachedConstraintsUtils';
+import { IFilterAttachedConstraintsForTargetActorDependencies } from '../../../infrastructure/authorization-policies/domain/IAuthorizationPolicyAttachedConstraintsUtils';
+import { AllPolicies } from '../../app-authorization-policies-definitions/AllPolicies';
 
 @Injectable()
 export class AppAuthorizationPoliciesRepositoryService {
@@ -20,7 +21,7 @@ export class AppAuthorizationPoliciesRepositoryService {
   }
 
   private async getAuthorizationPoliciesManager() {
-    const authorizationPoliciesManager = new AuthorizationPoliciesManager();
+    const authorizationPoliciesManager = new AuthorizationPoliciesManager<ITargetActor>();
     await authorizationPoliciesManager.addPolicies(this.getAllAppAuthorizationPolicies());
     return authorizationPoliciesManager;
   }
@@ -32,9 +33,13 @@ export class AppAuthorizationPoliciesRepositoryService {
 
   //
 
-  async *getAttachedConstraintsForTargetActor(targetActor: ITargetActor, deps: IFilterAttachedConstraintsForTargetActorDependencies) {
+  async *getAttachedConstraintsForTargetActor(
+    targetActor: ITargetActor,
+    deps: IFilterAttachedConstraintsForTargetActorDependencies,
+  ): AsyncIterable<IAuthorizationPolicyAttachedConstraint<ITargetActor>> {
     const allAttachedConstraintsIterable = this.getAllAttachedConstraints();
-    yield* filterAttachedConstraintsForTargetActor(allAttachedConstraintsIterable, targetActor, deps);
+
+    yield* filterAttachedConstraintsForTargetActor<ITargetActor>(allAttachedConstraintsIterable, targetActor, deps);
   }
 
   async *getMatchedAttachedStatements(

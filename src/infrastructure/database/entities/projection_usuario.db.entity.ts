@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
-import { ProjectionUsuarioModel } from '../../../domain';
+import { ProjectionUsuarioModel, UsuarioModel } from '../../../domain';
 
 @Entity('projection_usuario')
 export class ProjectionUsuarioDbEntity implements ProjectionUsuarioModel {
@@ -9,7 +9,7 @@ export class ProjectionUsuarioDbEntity implements ProjectionUsuarioModel {
   // ...
 
   @Column({ name: 'data', nullable: true, type: 'jsonb' })
-  data!: unknown | null;
+  data!: UsuarioModel | null;
 
   // ...
 
