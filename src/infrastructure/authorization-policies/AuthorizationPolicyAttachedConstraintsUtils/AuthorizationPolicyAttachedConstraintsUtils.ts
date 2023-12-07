@@ -1,6 +1,6 @@
 import { IAuthorizationPolicyAttachedConstraintKind } from '@sisgea/authorization-policies-core';
 import { ITargetActor, ITargetActorKind } from '../../../domain';
-import { IFilterAttachedConstraintsForTargetActor } from '../_interfaces/IAuthorizationPolicyAttachedConstraintsUtils';
+import { IFilterAttachedConstraintsForTargetActor } from '../domain/IAuthorizationPolicyAttachedConstraintsUtils';
 
 export const filterAttachedConstraintsForTargetActor: IFilterAttachedConstraintsForTargetActor<ITargetActor> = async function* (
   attachedConstraintsIterable,

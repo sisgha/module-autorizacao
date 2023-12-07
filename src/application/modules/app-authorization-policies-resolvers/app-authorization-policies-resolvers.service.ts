@@ -3,7 +3,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { IAuthorizationPolicyConditionType, IAuthorizationPolicyMixedStatement } from '@sisgea/authorization-policies-core';
 import { extractAliasesMappingsFromMixedStatement } from '@sisgea/authorization-policies-core/dist/core/AuthorizationPolicies/AuthorizationPolicyConstraintAttachedStatementsMixer/AuthorizationPolicyConstraintAttachedStatementsMixerUtils';
 import { ITargetActor } from '../../../domain';
-import { AuthorizationPolicyConditionInterpreterTypeORM } from '../../../infrastructure/AuthorizationPolicies/AuthorizationPolicyConditionInterpreters';
+import { AuthorizationPolicyConditionInterpreterTypeORMPostgres } from '../../../infrastructure/authorization-policies/AuthorizationPolicyConditionInterpreters';
 import { DatabaseAppResources } from '../../../infrastructure/database/database-app-resources/database-app-resources';
 import { DatabaseService } from '../../../infrastructure/database/database.service';
 import { getBestResolutionStrategyForMixedStatement } from './utils/getBestResolutionStrategyForMixedStatement';
@@ -62,7 +62,7 @@ export class AppAuthorizationPoliciesResolversService {
 
     const qb = repository.createQueryBuilder(mixedStatement.alias);
 
-    const typeormInterpreter = new AuthorizationPolicyConditionInterpreterTypeORM(
+    const typeormInterpreter = new AuthorizationPolicyConditionInterpreterTypeORMPostgres(
       DatabaseAppResources,
       extractAliasesMappingsFromMixedStatement(mixedStatement, resource),
     );

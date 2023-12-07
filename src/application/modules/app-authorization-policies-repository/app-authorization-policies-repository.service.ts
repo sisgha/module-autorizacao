@@ -8,8 +8,8 @@ import {
 } from '@sisgea/authorization-policies-core';
 import { AllPolicies } from '../../app-authorization-policies-definitions/AllPolicies';
 import { ITargetActor } from '../../../domain';
-import { IFilterAttachedConstraintsForTargetActorDependencies } from '../../../infrastructure/AuthorizationPolicies/interfaces/IAuthorizationPolicyAttachedConstraintsUtils';
-import { filterAttachedConstraintsForTargetActor } from '../../../infrastructure/AuthorizationPolicies/AuthorizationPolicyAttachedConstraintsUtils';
+import { IFilterAttachedConstraintsForTargetActorDependencies } from '../../../infrastructure/authorization-policies/domain/IAuthorizationPolicyAttachedConstraintsUtils';
+import { filterAttachedConstraintsForTargetActor } from '../../../infrastructure/authorization-policies/AuthorizationPolicyAttachedConstraintsUtils';
 
 @Injectable()
 export class AppAuthorizationPoliciesRepositoryService {

@@ -1,6 +1,5 @@
 import { DataSource, EntityManager, Repository } from 'typeorm';
-import { GenericProjection } from '../../domain';
-import { IAppResourceKey } from '../../domain/sisgea/IAppResourceKey';
+import { GenericProjection, IAppResourceKey } from '../../domain';
 import { IProjectionUsuarioRepository, getProjectionUsuarioRepository } from '../database/repositories/projection_usuario.repository';
 
 export class DatabaseContext {
@@ -15,6 +14,7 @@ export class DatabaseContext {
   }
 
   getProjectionRepositoryForResource(resource: IAppResourceKey.USUARIO): IProjectionUsuarioRepository;
+
   getProjectionRepositoryForResource(resource: string | IAppResourceKey): Repository<GenericProjection> | null;
 
   getProjectionRepositoryForResource(resource: string | IAppResourceKey) {

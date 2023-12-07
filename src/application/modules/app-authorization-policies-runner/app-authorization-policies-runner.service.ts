@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AllowedResourceResponse } from '@sisgea/autorizacao-client';
 import { get } from 'lodash';
 import { ITargetActor } from '../../../domain';
-import { IFilterAttachedConstraintsForTargetActorDependencies } from '../../../infrastructure/AuthorizationPolicies/interfaces/IAuthorizationPolicyAttachedConstraintsUtils';
+import { IFilterAttachedConstraintsForTargetActorDependencies } from '../../../infrastructure/authorization-policies/domain/IAuthorizationPolicyAttachedConstraintsUtils';
 import { AppAuthorizationPoliciesRepositoryService } from '../app-authorization-policies-repository/app-authorization-policies-repository.service';
 import { AppAuthorizationPoliciesResolversService } from '../app-authorization-policies-resolvers/app-authorization-policies-resolvers.service';
 import { IResolution } from '../app-authorization-policies-resolvers/domain/IResolution';

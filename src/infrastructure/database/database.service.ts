@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { APP_DATA_SOURCE_TOKEN } from './tokens/APP_DATA_SOURCE_TOKEN';
-import { DatabaseContext } from '../DatabaseContext/DatabaseContext';
+import { DatabaseContext } from '../database-context/DatabaseContext';
 
 @Injectable()
 export class DatabaseService {

@@ -20,9 +20,9 @@ import {
   IAuthorizationPolicyConditionValueTrue,
 } from '@sisgea/authorization-policies-core';
 import { IDatabaseAppResource } from '../../database/interfaces/IDatabaseAppResource';
-import { getResourceAttributeProjection } from './getResourceAttributeProjection';
+import { getTypeORMPostgresResourceAttributeProjection } from './getTypeORMPostgresResourceAttributeProjection';
 
-export class AuthorizationPolicyConditionInterpreterTypeORM {
+export class AuthorizationPolicyConditionInterpreterTypeORMPostgres {
   #params_counter: number = 0;
 
   #params = new Map<string, any>();
@@ -37,7 +37,7 @@ export class AuthorizationPolicyConditionInterpreterTypeORM {
   }
 
   private getResourceAttributeProjection(alias: string, attribute: string) {
-    return getResourceAttributeProjection(alias, attribute, this.databaseAppResources, this.aliasesMappings);
+    return getTypeORMPostgresResourceAttributeProjection(alias, attribute, this.databaseAppResources, this.aliasesMappings);
   }
 
   private attachParam(value: any) {

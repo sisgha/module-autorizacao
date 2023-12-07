@@ -1,6 +1,6 @@
 import { IDatabaseAppResource } from '../../database/interfaces/IDatabaseAppResource';
 
-export const getResourceAttributeProjection = (
+export const getTypeORMPostgresResourceAttributeProjection = (
   alias: string,
   attribute: string,
   databaseAppResources: IDatabaseAppResource[] = [],
