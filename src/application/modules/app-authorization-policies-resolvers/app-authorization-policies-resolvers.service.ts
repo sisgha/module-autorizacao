@@ -194,6 +194,10 @@ export class AppAuthorizationPoliciesResolversService {
           return false;
         }
 
+        if (literalResourceId === null) {
+          return true;
+        }
+
         const queryRunner = databaseContext.dataSource.createQueryRunner();
 
         const result = await queryRunner.query(`SELECT (EXISTS (${sql})) as check;`, params, true);
