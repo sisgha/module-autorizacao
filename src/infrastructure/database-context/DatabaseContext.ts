@@ -5,6 +5,22 @@ import { IProjectionUsuarioRepository, getProjectionUsuarioRepository } from '..
 export class DatabaseContext {
   constructor(readonly ds: DataSource | EntityManager) {}
 
+  get dataSource() {
+    if (this.ds instanceof DataSource) {
+      return this.ds;
+    } else {
+      return this.ds.connection;
+    }
+  }
+
+  get manager() {
+    if (this.ds instanceof DataSource) {
+      return this.ds.manager;
+    } else {
+      return this.ds;
+    }
+  }
+
   static new(ds: DataSource | EntityManager) {
     return new DatabaseContext(ds);
   }

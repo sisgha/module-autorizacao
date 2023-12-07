@@ -1,13 +1,19 @@
 import { AbilityBuilder, createMongoAbility } from '@casl/ability';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { IAuthorizationPolicyConditionType, IAuthorizationPolicyMixedStatement } from '@sisgea/authorization-policies-core';
+import {
+  IAuthorizationPolicyConditionType,
+  IAuthorizationPolicyConstraintAttachedStatementBehaviour,
+  IAuthorizationPolicyConstraintStatementJoinMode,
+  IAuthorizationPolicyMixedStatement,
+} from '@sisgea/authorization-policies-core';
 import { extractAliasesMappingsFromMixedStatement } from '@sisgea/authorization-policies-core/dist/core/AuthorizationPolicies/AuthorizationPolicyConstraintAttachedStatementsMixer/AuthorizationPolicyConstraintAttachedStatementsMixerUtils';
+import { get } from 'lodash';
 import { ITargetActor } from '../../../domain';
 import { AuthorizationPolicyConditionInterpreterTypeORMPostgres } from '../../../infrastructure/authorization-policies/AuthorizationPolicyConditionInterpreters';
 import { DatabaseAppResources } from '../../../infrastructure/database/database-app-resources/database-app-resources';
 import { DatabaseService } from '../../../infrastructure/database/database.service';
-import { getBestResolutionStrategyForMixedStatement } from './utils/getBestResolutionStrategyForMixedStatement';
 import { IResolutionResolver, IResolutionResolverDatabase, IResolutionResolverStrategy } from './domain/IResolutionResolver';
+import { getBestResolutionStrategyForMixedStatement } from './utils/getBestResolutionStrategyForMixedStatement';
 
 @Injectable()
 export class AppAuthorizationPoliciesResolversService {
@@ -26,15 +32,24 @@ export class AppAuthorizationPoliciesResolversService {
   ): Promise<IResolutionResolver> {
     const builder = new AbilityBuilder(createMongoAbility);
 
-    switch (mixedStatement.where.type) {
-      case IAuthorizationPolicyConditionType.VALUE_BOOLEAN: {
-        if (mixedStatement.where.value) {
-          builder.can(action, resource);
-        } else {
-          builder.cannot(action, resource);
-        }
+    for (const subStatementMixed of mixedStatement.subStatementsMixed) {
+      switch (subStatementMixed.where.type) {
+        case IAuthorizationPolicyConditionType.VALUE_BOOLEAN: {
+          const finalCondition =
+            subStatementMixed.behaviour === IAuthorizationPolicyConstraintAttachedStatementBehaviour.APPROVE
+              ? subStatementMixed.where.value
+              : subStatementMixed.behaviour === IAuthorizationPolicyConstraintAttachedStatementBehaviour.REJECT
+              ? !subStatementMixed.where.value
+              : null;
 
-        break;
+          if (finalCondition === true) {
+            builder.can(action, resource);
+          } else if (finalCondition === false) {
+            builder.cannot(action, resource);
+          }
+
+          break;
+        }
       }
     }
 
@@ -42,7 +57,9 @@ export class AppAuthorizationPoliciesResolversService {
 
     return {
       strategy: IResolutionResolverStrategy.CASL,
-      ability,
+      async check() {
+        return ability.can(action, resource);
+      },
     };
   }
 
@@ -53,41 +70,153 @@ export class AppAuthorizationPoliciesResolversService {
     resourceIdJSON: string | null = null,
     mixedStatement: IAuthorizationPolicyMixedStatement,
   ): Promise<IResolutionResolverDatabase> {
+    const literalResourceId = resourceIdJSON !== null ? JSON.parse(resourceIdJSON) : null;
+
+    //
+
     const databaseContext = await this.databaseService.getDatabaseContextApp();
+
     const repository = databaseContext.getProjectionRepositoryForResource(resource);
 
     if (!repository) {
       throw new InternalServerErrorException();
     }
 
-    const qb = repository.createQueryBuilder(mixedStatement.alias);
-
     const typeormInterpreter = new AuthorizationPolicyConditionInterpreterTypeORMPostgres(
       DatabaseAppResources,
       extractAliasesMappingsFromMixedStatement(mixedStatement, resource),
     );
 
-    const interpretedWhere = typeormInterpreter.interpret(mixedStatement.where);
+    //
 
-    qb.where(interpretedWhere.sql, interpretedWhere.params);
+    const databaseQueries: { sql: string; params: any[]; concat: 'union' | 'except' }[] = [];
 
-    for (const inner_join of mixedStatement.inner_joins) {
-      const interpretedInnerJoin = typeormInterpreter.interpret(inner_join.on_condition);
+    //
 
-      qb.innerJoin(inner_join.b_resource, inner_join.b_alias, interpretedInnerJoin.sql, interpretedInnerJoin.params);
+    for (const subStatementMixed of mixedStatement.subStatementsMixed) {
+      const subStatementQueryBuilder = repository.createQueryBuilder(mixedStatement.alias);
+
+      const interpretedWhere = typeormInterpreter.interpret(subStatementMixed.where);
+
+      subStatementQueryBuilder.where(interpretedWhere.sql, interpretedWhere.params);
+
+      for (const join of subStatementMixed.joins) {
+        switch (join.mode) {
+          case IAuthorizationPolicyConstraintStatementJoinMode.INNER: {
+            const interpretedInnerJoin = typeormInterpreter.interpret(join.on_condition);
+
+            subStatementQueryBuilder.innerJoin(join.b_resource, join.b_alias, interpretedInnerJoin.sql, interpretedInnerJoin.params);
+
+            break;
+          }
+
+          default: {
+            break;
+          }
+        }
+      }
+
+      if (literalResourceId !== null) {
+        subStatementQueryBuilder.andWhere(`${mixedStatement.alias}.id = :literalResourceId`, { literalResourceId });
+      }
+
+      subStatementQueryBuilder.select(`${mixedStatement.alias}.id`);
+
+      const [sql, params] = subStatementQueryBuilder.getQueryAndParameters();
+
+      switch (subStatementMixed.behaviour) {
+        case IAuthorizationPolicyConstraintAttachedStatementBehaviour.APPROVE: {
+          databaseQueries.push({
+            sql,
+            params,
+            concat: 'union',
+          });
+
+          break;
+        }
+
+        case IAuthorizationPolicyConstraintAttachedStatementBehaviour.REJECT: {
+          databaseQueries.push({
+            sql,
+            params,
+            concat: 'except',
+          });
+
+          break;
+        }
+
+        default: {
+          break;
+        }
+      }
     }
 
-    const literalResourceId = resourceIdJSON !== null ? JSON.parse(resourceIdJSON) : null;
+    const { sql, params } = databaseQueries.reduce<{ sql: string | null; params: any[] }>(
+      (acc, i) => {
+        switch (i.concat) {
+          case 'union': {
+            if (acc.sql === null) {
+              return {
+                sql: i.sql,
+                params: [...acc.params, ...i.params],
+              };
+            } else {
+              return {
+                sql: `(${acc.sql}) UNION (${i.sql})`,
+                params: [...acc.params, ...i.params],
+              };
+            }
+          }
 
-    if (literalResourceId !== null) {
-      qb.andWhere(`${mixedStatement.alias}.id = :literalResourceId`, { literalResourceId });
-    }
-
-    qb.select(`${mixedStatement.alias}.id`);
+          case 'except': {
+            if (acc.sql === null) {
+              return {
+                sql: null,
+                params: [],
+              };
+            } else {
+              return {
+                sql: `(${acc.sql}) EXCEPT (${i.sql})`,
+                params: [...acc.params, ...i.params],
+              };
+            }
+          }
+        }
+      },
+      { sql: null, params: [] },
+    );
 
     return {
       strategy: IResolutionResolverStrategy.DATABASE,
-      qb,
+
+      async check() {
+        if (sql === null) {
+          return false;
+        }
+
+        const queryRunner = databaseContext.dataSource.createQueryRunner();
+
+        const result = await queryRunner.query(`SELECT (EXISTS (${sql})) as check;`, params, true);
+
+        const record = result.records[0];
+
+        return record['check'];
+      },
+
+      async *streamIdsJson() {
+        if (sql === null) {
+          return;
+        }
+
+        const queryRunner = databaseContext.dataSource.createQueryRunner();
+
+        const stream = await queryRunner.stream(sql, params);
+
+        for await (const chunk of stream) {
+          const alias = mixedStatement.alias;
+          yield JSON.stringify(get(chunk, `${alias}_id`));
+        }
+      },
     };
   }
 

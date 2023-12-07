@@ -8,8 +8,9 @@ export const getBestResolutionStrategyForMixedStatement = (
 ) => {
   if (
     resourceId === null &&
-    mixedStatement.where.type === IAuthorizationPolicyConditionType.VALUE_BOOLEAN &&
-    mixedStatement.inner_joins.length === 0
+    mixedStatement.subStatementsMixed.length <= 1 &&
+    mixedStatement.subStatementsMixed.every((subStatement) => subStatement.joins.length === 0) &&
+    mixedStatement.subStatementsMixed.every((subStatement) => subStatement.where.type === IAuthorizationPolicyConditionType.VALUE_BOOLEAN)
   ) {
     return 'casl';
   }

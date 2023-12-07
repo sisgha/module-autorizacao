@@ -9,8 +9,9 @@ export const getBestResolutionStrategyForMixedStatement = (
 ) => {
   if (
     resourceId === null &&
-    mixedStatement.where.type === IAuthorizationPolicyConditionType.VALUE_BOOLEAN &&
-    mixedStatement.inner_joins.length === 0
+    mixedStatement.subStatementsMixed.length <= 1 &&
+    mixedStatement.subStatementsMixed.every((i) => i.where.type === IAuthorizationPolicyConditionType.VALUE_BOOLEAN) &&
+    mixedStatement.subStatementsMixed.every((i) => i.joins.length === 0)
   ) {
     return IResolutionResolverStrategy.CASL;
   }

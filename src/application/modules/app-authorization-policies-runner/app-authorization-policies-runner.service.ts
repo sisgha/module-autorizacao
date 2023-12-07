@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { AllowedResourceResponse } from '@sisgea/autorizacao-client';
-import { get } from 'lodash';
 import { ITargetActor } from '../../../domain';
 import { IFilterAttachedConstraintsForTargetActorDependencies } from '../../../infrastructure/authorization-policies/domain/IAuthorizationPolicyAttachedConstraintsUtils';
 import { AppAuthorizationPoliciesRepositoryService } from '../app-authorization-policies-repository/app-authorization-policies-repository.service';
@@ -20,9 +19,13 @@ export class AppAuthorizationPoliciesRunnerService {
   ) {}
 
   async checkRoles(targetActor: ITargetActor, roles: string[]) {
-    // TODO
-    console.log('TODO: checkRoles', { targetActor, roles });
-    return false;
+    // TODO: a fazer
+
+    const fallback = true;
+
+    console.log('TODO: checkRoles', { targetActor, roles, result: fallback });
+
+    return fallback;
   }
 
   private async buildMixedStatement(targetActor: ITargetActor, action: string, resource: string) {
@@ -84,13 +87,13 @@ export class AppAuthorizationPoliciesRunnerService {
 
     switch (resolver.strategy) {
       case IResolutionResolverStrategy.DATABASE: {
-        const exists = await resolver.qb.getExists();
-        return exists;
+        const check = await resolver.check();
+        return check;
       }
 
       case IResolutionResolverStrategy.CASL: {
-        const can = resolver.ability.can(action, resource);
-        return can;
+        const check = await resolver.check();
+        return check;
       }
 
       default: {
@@ -100,15 +103,11 @@ export class AppAuthorizationPoliciesRunnerService {
   }
 
   async *targetActorAllowedResources(targetActor: ITargetActor, action: string, resource: string): AsyncIterable<AllowedResourceResponse> {
-    const { resolver, mixedStatement } = await this.getResolutionDatabase(targetActor, action, resource, null);
+    const { resolver } = await this.getResolutionDatabase(targetActor, action, resource, null);
 
-    const stream = await resolver.qb.stream();
-
-    for await (const chunk of stream) {
-      const alias = mixedStatement.alias;
-
+    for await (const resourceIdJson of resolver.streamIdsJson()) {
       const allowedResourceResponse = <AllowedResourceResponse>{
-        resourceIdJson: JSON.stringify(get(chunk, `${alias}_id`)),
+        resourceIdJson: resourceIdJson,
       };
 
       yield allowedResourceResponse;

@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { AllowedResourceResponse, CanResponse, GenericCanRequest, UsuarioCanRequest } from '@sisgea/autorizacao-client';
 import { ITargetActor } from '../../../domain';
-import { AppAuthorizationPoliciesRunnerService } from '../app-authorization-policies-runner/app-authorization-policies-runner.service';
 import {
   createTargetActorAnonymous,
   createTargetActorSystem,
   createTargetActorUser,
 } from '../../../infrastructure/target-actor/target-actor.utils';
+import { AppAuthorizationPoliciesRunnerService } from '../app-authorization-policies-runner/app-authorization-policies-runner.service';
 
 @Injectable()
 export class SisgeaAutorizacaoService {
