@@ -83,15 +83,11 @@ export class AppAuthorizationPoliciesRunnerService {
   }
 
   async targetActorCan(targetActor: ITargetActor, action: string, resource: string, resourceIdJson: string | null = null) {
-    const { resolver: resolver } = await this.getResolution(targetActor, action, resource, resourceIdJson);
+    const { resolver } = await this.getResolution(targetActor, action, resource, resourceIdJson);
 
     switch (resolver.strategy) {
+      case IResolutionResolverStrategy.CASL:
       case IResolutionResolverStrategy.DATABASE: {
-        const check = await resolver.check();
-        return check;
-      }
-
-      case IResolutionResolverStrategy.CASL: {
         const check = await resolver.check();
         return check;
       }

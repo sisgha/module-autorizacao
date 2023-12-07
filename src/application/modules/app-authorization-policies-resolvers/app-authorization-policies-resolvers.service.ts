@@ -198,13 +198,15 @@ export class AppAuthorizationPoliciesResolversService {
           return true;
         }
 
-        const queryRunner = databaseContext.dataSource.createQueryRunner();
+        return await databaseContext.dataSource.transaction(async (entityManager) => {
+          const queryRunner = entityManager.queryRunner;
 
-        const result = await queryRunner.query(`SELECT (EXISTS (${sql})) as check;`, params, true);
+          const result = await queryRunner.query(`SELECT (EXISTS (${sql})) as check;`, params, true);
 
-        const record = result.records[0];
+          const record = result.records[0];
 
-        return record['check'];
+          return record['check'];
+        });
       },
 
       async *streamIdsJson() {
