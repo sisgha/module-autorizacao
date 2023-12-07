@@ -1,11 +1,15 @@
 import { InternalServerErrorException } from '@nestjs/common';
+
 import {
   IAuthorizationPolicyCondition,
+  IAuthorizationPolicyConditionType,
   IAuthorizationPolicyConditionValueAnd,
   IAuthorizationPolicyConditionValueEq,
   IAuthorizationPolicyConditionValueFalse,
   IAuthorizationPolicyConditionValueGreaterThan,
   IAuthorizationPolicyConditionValueGreaterThanOrEqual,
+  IAuthorizationPolicyConditionValueIsNotNull,
+  IAuthorizationPolicyConditionValueIsNull,
   IAuthorizationPolicyConditionValueLessThan,
   IAuthorizationPolicyConditionValueLessThanOrEqual,
   IAuthorizationPolicyConditionValueLiteral,
@@ -14,7 +18,7 @@ import {
   IAuthorizationPolicyConditionValueOr,
   IAuthorizationPolicyConditionValueResourceAttribute,
   IAuthorizationPolicyConditionValueTrue,
-} from '../../../domain';
+} from '@sisgea/authorization-policies-core';
 import { IDatabaseAppResource } from '../../database/interfaces/IDatabaseAppResource';
 import { getResourceAttributeProjection } from './getResourceAttributeProjection';
 
@@ -52,12 +56,16 @@ export class AuthorizationPolicyConditionInterpreterTypeORM {
     };
   }
 
-  value_true(node: IAuthorizationPolicyConditionValueTrue) {
+  value_true() {
     return `TRUE`;
   }
 
-  value_false(node: IAuthorizationPolicyConditionValueFalse) {
+  value_false() {
     return `FALSE`;
+  }
+
+  value_boolean(node: IAuthorizationPolicyConditionValueTrue | IAuthorizationPolicyConditionValueFalse) {
+    return node.value ? this.value_true() : this.value_false();
   }
 
   value_literal(node: IAuthorizationPolicyConditionValueLiteral) {
@@ -72,6 +80,14 @@ export class AuthorizationPolicyConditionInterpreterTypeORM {
 
   value_not(node: IAuthorizationPolicyConditionValueNot) {
     return `NOT ${this.generic(node.value)}`;
+  }
+
+  value_is_not_null(node: IAuthorizationPolicyConditionValueIsNotNull) {
+    return `${this.generic(node.value)} IS NOT NULL`;
+  }
+
+  value_is_null(node: IAuthorizationPolicyConditionValueIsNull) {
+    return `${this.generic(node.value)} IS NULL`;
   }
 
   value_eq(node: IAuthorizationPolicyConditionValueEq) {
@@ -108,55 +124,59 @@ export class AuthorizationPolicyConditionInterpreterTypeORM {
 
   generic(node: IAuthorizationPolicyCondition) {
     switch (node.type) {
-      case 'true': {
-        return this.value_true(node);
+      case IAuthorizationPolicyConditionType.VALUE_BOOLEAN: {
+        return this.value_boolean(node);
       }
 
-      case 'false': {
-        return this.value_false(node);
-      }
-
-      case 'literal': {
+      case IAuthorizationPolicyConditionType.VALUE_LITERAL: {
         return this.value_literal(node);
       }
 
-      case 'resource_attribute': {
+      case IAuthorizationPolicyConditionType.VALUE_RESOURCE_ATTRIBUTE: {
         return this.value_resource_attribute(node);
       }
 
-      case 'not': {
+      case IAuthorizationPolicyConditionType.OPERATOR_UNARY_NOT: {
         return this.value_not(node);
       }
 
-      case 'eq': {
+      case IAuthorizationPolicyConditionType.OPERATOR_UNARY_IS_NOT_NULL: {
+        return this.value_is_not_null(node);
+      }
+
+      case IAuthorizationPolicyConditionType.OPERATOR_UNARY_IS_NULL: {
+        return this.value_is_null(node);
+      }
+
+      case IAuthorizationPolicyConditionType.OPERATOR_BINARY_EQ: {
         return this.value_eq(node);
       }
 
-      case 'n_eq': {
+      case IAuthorizationPolicyConditionType.OPERATOR_BINARY_N_EQ: {
         return this.value_n_eq(node);
       }
 
-      case 'and': {
+      case IAuthorizationPolicyConditionType.OPERATOR_BINARY_AND: {
         return this.value_and(node);
       }
 
-      case 'or': {
+      case IAuthorizationPolicyConditionType.OPERATOR_BINARY_OR: {
         return this.value_or(node);
       }
 
-      case 'gt': {
+      case IAuthorizationPolicyConditionType.OPERATOR_BINARY_GT: {
         return this.value_gt(node);
       }
 
-      case 'gte': {
+      case IAuthorizationPolicyConditionType.OPERATOR_BINARY_GTE: {
         return this.value_gte(node);
       }
 
-      case 'lt': {
+      case IAuthorizationPolicyConditionType.OPERATOR_BINARY_LT: {
         return this.value_lt(node);
       }
 
-      case 'lte': {
+      case IAuthorizationPolicyConditionType.OPERATOR_BINARY_LTE: {
         return this.value_lte(node);
       }
 

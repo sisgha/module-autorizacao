@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AuthorizationPoliciesModules } from './application/modules/authorization-policies/authorization-policies.module';
+import { AuthorizationPoliciesModules } from './application/modules/app-authorization-policies-runner/app-authorization-policies-runner.module';
 import { SisgeaAutorizacaoModule } from './application/modules/sisgea-autorizacao/sisgea-autorizacao.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { DbEventsModule } from './infrastructure/db-events/db-events.module';

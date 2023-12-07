@@ -1,13 +1,15 @@
-import { IAuthorizationPolicyAttachedConstraintKind, IFilterAttachedConstraintsForTargetActor, ITargetActorKind } from '../../../domain';
+import { IAuthorizationPolicyAttachedConstraintKind } from '@sisgea/authorization-policies-core';
+import { ITargetActor, ITargetActorKind } from '../../../domain';
+import { IFilterAttachedConstraintsForTargetActor } from '../_interfaces/IAuthorizationPolicyAttachedConstraintsUtils';
 
-export const filterAttachedConstraintsForTargetActor: IFilterAttachedConstraintsForTargetActor = async function* (
+export const filterAttachedConstraintsForTargetActor: IFilterAttachedConstraintsForTargetActor<ITargetActor> = async function* (
   attachedConstraintsIterable,
   targetActor,
   deps,
 ) {
   for await (const attachedConstraint of attachedConstraintsIterable) {
     switch (attachedConstraint.kind) {
-      case IAuthorizationPolicyAttachedConstraintKind.AUTHED_USUARIO: {
+      case IAuthorizationPolicyAttachedConstraintKind.AUTHED_USER: {
         if (targetActor.kind === ITargetActorKind.USER) {
           yield attachedConstraint;
         }
