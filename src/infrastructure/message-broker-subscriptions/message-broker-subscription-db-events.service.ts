@@ -5,23 +5,23 @@ import { DataSource } from 'typeorm';
 import { DbEventModel } from '../../domain';
 import { DatabaseContext } from '../database-context/DatabaseContext';
 import { APP_DATA_SOURCE_TOKEN } from '../database/tokens/APP_DATA_SOURCE_TOKEN';
-import { MessageBrokerContainerService } from '../message-broker/message-broker-container.service';
-import { DbEventAction } from './domain/DbEventAction';
-import { HandleDbEventOutputReason } from './domain/HandleDbEventOutputReason';
-import { PlaceholderUndefined } from './utils/PlaceholderUndefined';
-import { extractDbEventDataDateUpdated } from './utils/extractDbEventDateUpdated';
-import { parseDBEvent } from './utils/parseDbEvent';
+import { MessageBrokerContainerService } from '../message-broker-container/message-broker-container.service';
+import { DbEventAction } from '../db-events/domain/DbEventAction';
+import { HandleDbEventOutputReason } from '../db-events/domain/HandleDbEventOutputReason';
+import { PlaceholderUndefined } from '../db-events/db-events-utils/placeholder-undefined';
+import { extractDbEventDataDateUpdated } from '../db-events/db-events-utils/extract-db-event-date-updated';
+import { parseDbEvent } from '../db-events/db-events-utils/parse-db-event';
 
 @Injectable()
-export class DbEventsService implements OnModuleInit {
+export class MessageBrokerSubscriptionDbEventsService implements OnModuleInit {
   #subscription: SubscriberSessionAsPromised | null = null;
 
   constructor(
     //
-    private messageBrokerContainerService: MessageBrokerContainerService,
-
     @Inject(APP_DATA_SOURCE_TOKEN)
     private appDataSource: DataSource,
+
+    private messageBrokerContainerService: MessageBrokerContainerService,
   ) {}
 
   onModuleInit() {
@@ -36,6 +36,8 @@ export class DbEventsService implements OnModuleInit {
 
       subscription.on('message', this.handleMessageBrokerIncomingDbEventMessage.bind(this));
       subscription.on('error', this.handleMessageBrokerIncomingDBEventError.bind(this));
+
+      this.#subscription = subscription;
     }
   }
 
@@ -45,14 +47,14 @@ export class DbEventsService implements OnModuleInit {
     const repository = databaseContext.getProjectionRepositoryForResource(dbEvent.resource);
 
     if (repository) {
+      const dbEventData = dbEvent.data ?? null;
+      const dbEventProjectionDateUpdated = extractDbEventDataDateUpdated(dbEventData);
+
       const localProjection = await repository
         .createQueryBuilder('row')
         .select(['row'])
         .where("row.data ->> 'id' = :rowId", { rowId: dbEvent.rowId })
         .getOne();
-
-      const dbEventData = dbEvent.data ?? null;
-      const dbEventProjectionDateUpdated = extractDbEventDataDateUpdated(dbEventData);
 
       const localProjectionData = localProjection?.data ?? null;
       const localProjectionDateUpdated = extractDbEventDataDateUpdated(localProjectionData);
@@ -129,7 +131,7 @@ export class DbEventsService implements OnModuleInit {
 
   async handleMessageBrokerIncomingDbEventMessage(message: Message, content: any, ackOrNack: AckOrNack) {
     const messageContent = message.content.toString();
-    const parseOutput = await parseDBEvent(messageContent);
+    const parseOutput = await parseDbEvent(messageContent);
 
     let outputReason: HandleDbEventOutputReason | null = null;
 

@@ -11,4 +11,4 @@ import { MessageBrokerContainerService } from './message-broker-container.servic
     MessageBrokerContainerService,
   ],
 })
-export class MessageBrokerModule {}
+export class MessageBrokerContainerModule {}

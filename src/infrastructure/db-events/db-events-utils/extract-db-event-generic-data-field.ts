@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
-import { PlaceholderUndefined } from './PlaceholderUndefined';
+import { PlaceholderUndefined } from './placeholder-undefined';
 
-export const extractDbEventDataField =
+export const extractDbEventGenericDataField =
   <ReturnType>(path: string) =>
   (data: any) =>
     _.get(data, path, PlaceholderUndefined) as ReturnType | typeof PlaceholderUndefined;

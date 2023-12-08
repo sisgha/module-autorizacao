@@ -1,15 +1,15 @@
 import { tryJSONParse } from '../../utils';
-import { DbEventZod } from '../../dtos';
 import { DbEventModel } from '../../../domain';
 import { HandleDbEventOutputReason } from '../domain/HandleDbEventOutputReason';
+import { DbEventZod } from '../../dtos';
 
-export const parseDBEvent = async (dbEventRaw: unknown) => {
+export const parseDbEvent = async (dbEventRaw: unknown) => {
   const dbEvent = typeof dbEventRaw === 'string' ? tryJSONParse(dbEventRaw) : dbEventRaw;
 
-  const result = await DbEventZod.safeParseAsync(dbEvent);
+  const dbEventValidationResult = await DbEventZod.safeParseAsync(dbEvent);
 
-  if (result.success) {
-    const dbEvent = result.data as DbEventModel;
+  if (dbEventValidationResult.success) {
+    const dbEvent = dbEventValidationResult.data as DbEventModel;
 
     return {
       success: true,
