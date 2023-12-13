@@ -1,6 +1,6 @@
 # sisgea-module-autorizacao
 
-Microservice de autenticação.
+Microservice de autorização.
 
 ## Desenvolvimento
 

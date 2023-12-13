@@ -10,10 +10,10 @@ async function bootstrap() {
     transport: Transport.GRPC,
 
     options: {
-      package: 'sisgea.autorizacao',
-      protoPath: require.resolve('@sisgea/autorizacao-client/proto/sisgea.autorizacao.proto'),
       url: url,
+      package: 'sisgea.autorizacao',
       credentials: ServerCredentials.createInsecure(),
+      protoPath: require.resolve('@sisgea/autorizacao-client/proto/sisgea.autorizacao.proto'),
     },
   });
 

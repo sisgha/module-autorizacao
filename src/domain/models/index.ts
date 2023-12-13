@@ -1,3 +1,3 @@
 export * from './foreign/';
-export * from './generic-projection';
+export * from './_core/generic-projection';
 export * from './projection-usuario.model';

@@ -1,7 +1,7 @@
 import * as z from 'zod';
-
-const UUIDZod = z.string().uuid();
-const IdIntZod = z.number().int().positive();
+import { UUIDZod } from '../_literals/uuid.zod';
+import { IdIntZod } from '../_literals/id-int.zod';
+import { mapDbEventDataKeys } from '../../db-events/db-events-utils/map-db-event-data-keys';
 
 export const DbEventZod = z.object({
   id: z.string().uuid(),
@@ -10,7 +10,10 @@ export const DbEventZod = z.object({
   action: z.string(),
   tableName: z.string(),
   rowId: z.union([UUIDZod, IdIntZod]),
-  data: z.any().nullable(),
+  data: z
+    .any()
+    .nullable()
+    .transform((i) => mapDbEventDataKeys(i)),
   dateEvent: z.string().datetime(),
   logId: UUIDZod,
 

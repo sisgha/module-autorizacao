@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { AutorizacaoModule } from './infrastructure/app/autorizacao/autorizacao.module';
+import { AuthorizationPoliciesModules } from './application/modules/app-authorization-policies-runner/app-authorization-policies-runner.module';
+import { SisgeaAutorizacaoModule } from './application/modules/sisgea-autorizacao/sisgea-autorizacao.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
-import { DbEventsModule } from './infrastructure/db-events/db-events.module';
+import { MessageBrokerSubscriptionsModule } from './infrastructure/message-broker-subscriptions/message-broker-subscriptions.module';
 import { EnvironmentConfigModule } from './infrastructure/environment-config';
-import { MessageBrokerModule } from './infrastructure/message-broker/message-broker.module';
+import { MessageBrokerContainerModule } from './infrastructure/message-broker-container/message-broker-container.module';
 
 @Module({
   imports: [
@@ -11,10 +12,12 @@ import { MessageBrokerModule } from './infrastructure/message-broker/message-bro
     //
     DatabaseModule,
     //
-    MessageBrokerModule,
-    DbEventsModule,
+    MessageBrokerContainerModule,
+    MessageBrokerSubscriptionsModule,
     //
-    AutorizacaoModule,
+    AuthorizationPoliciesModules,
+    //
+    SisgeaAutorizacaoModule,
   ],
   providers: [
     //
