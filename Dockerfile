@@ -1,5 +1,6 @@
-FROM node:18-alpine as base
-RUN apk update && apk add git
+FROM node:18 as base
+RUN apt update -y
+RUN apt install -y git
 WORKDIR /app
 
 FROM base as prod-deps
