@@ -1,4 +1,4 @@
-import { ISISGEANestSSOConfig } from '@sisgea/nest-sso';
+import { ISISGEANestSSOConfig } from '@sisgea/sso-nest-client';
 import { IConfigDatabase } from './IConfigDatabase';
 import { IConfigGRPCServer } from './IConfigGRPCServer';
 import { IConfigMessageBroker } from './IConfigMessageBroker';
