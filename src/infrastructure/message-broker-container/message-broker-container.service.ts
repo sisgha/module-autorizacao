@@ -44,11 +44,11 @@ export class MessageBrokerContainerService {
               },
             },
           },
-          queues: ['module_autenticacao_db_event_q'],
-          bindings: ['db_event[#] -> module_autenticacao_db_event_q'],
+          queues: ['module_autorizacao_db_event_q'],
+          bindings: ['db_event[#] -> module_autorizacao_db_event_q'],
           subscriptions: {
-            module_autenticacao_db_event_sub: {
-              queue: 'module_autenticacao_db_event_q',
+            module_autorizacao_db_event_sub: {
+              queue: 'module_autorizacao_db_event_q',
               prefetch: 3,
               options: {
                 exclusive: true,
