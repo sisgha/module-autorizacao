@@ -5,12 +5,12 @@ import { DataSource } from 'typeorm';
 import { DbEventModel } from '../../domain';
 import { DatabaseContext } from '../database-context/DatabaseContext';
 import { APP_DATA_SOURCE_TOKEN } from '../database/tokens/APP_DATA_SOURCE_TOKEN';
-import { MessageBrokerContainerService } from '../message-broker-container/message-broker-container.service';
-import { DbEventAction } from '../db-events/domain/DbEventAction';
-import { HandleDbEventOutputReason } from '../db-events/domain/HandleDbEventOutputReason';
-import { PlaceholderUndefined } from '../db-events/db-events-utils/placeholder-undefined';
 import { extractDbEventDataDateUpdated } from '../db-events/db-events-utils/extract-db-event-date-updated';
 import { parseDbEvent } from '../db-events/db-events-utils/parse-db-event';
+import { PlaceholderUndefined } from '../db-events/db-events-utils/placeholder-undefined';
+import { DbEventAction } from '../db-events/domain/DbEventAction';
+import { HandleDbEventOutputReason } from '../db-events/domain/HandleDbEventOutputReason';
+import { MessageBrokerContainerService } from '../message-broker-container/message-broker-container.service';
 
 @Injectable()
 export class MessageBrokerSubscriptionDbEventsService implements OnModuleInit {
@@ -32,7 +32,7 @@ export class MessageBrokerSubscriptionDbEventsService implements OnModuleInit {
     if (!this.#subscription) {
       const broker = await this.messageBrokerContainerService.getBroker();
 
-      const subscription = await broker.subscribe('module_autenticacao_db_event_sub');
+      const subscription = await broker.subscribe('module_autorizacao_db_event_sub');
 
       subscription.on('message', this.handleMessageBrokerIncomingDbEventMessage.bind(this));
       subscription.on('error', this.handleMessageBrokerIncomingDBEventError.bind(this));
