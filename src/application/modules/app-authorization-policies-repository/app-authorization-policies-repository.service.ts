@@ -10,28 +10,16 @@ import {
 import { ITargetActor } from '../../../domain';
 import { filterAttachedConstraintsForTargetActor } from '../../../infrastructure/authorization-policies/AuthorizationPolicyAttachedConstraintsUtils';
 import { IFilterAttachedConstraintsForTargetActorDependencies } from '../../../infrastructure/authorization-policies/domain/IAuthorizationPolicyAttachedConstraintsUtils';
-import { AllPolicies } from '../../app-authorization-policies-definitions/AllPolicies';
+import { AllPolicies } from '../../autorizacao-policies/AllPolicies';
 
 @Injectable()
 export class AppAuthorizationPoliciesRepositoryService {
   constructor() {}
 
-  private *getAllAppAuthorizationPolicies() {
-    yield* AllPolicies;
-  }
-
-  private async getAuthorizationPoliciesManager() {
-    const authorizationPoliciesManager = new AuthorizationPoliciesManager<ITargetActor>();
-    await authorizationPoliciesManager.addPolicies(this.getAllAppAuthorizationPolicies());
-    return authorizationPoliciesManager;
-  }
-
   async *getAllAttachedConstraints() {
     const authorizationPoliciesManager = await this.getAuthorizationPoliciesManager();
     yield* authorizationPoliciesManager.buildAttachedConstraints();
   }
-
-  //
 
   async *getAttachedConstraintsForTargetActor(
     targetActor: ITargetActor,
@@ -70,6 +58,8 @@ export class AppAuthorizationPoliciesRepositoryService {
     }
   }
 
+  //
+
   async buildMixedStatement(
     targetActor: ITargetActor,
     action: string,
@@ -82,5 +72,15 @@ export class AppAuthorizationPoliciesRepositoryService {
     await mixer.addAttachedStatements(matchedAttachedStatements);
 
     return mixer.state;
+  }
+
+  private *getAllAppAuthorizationPolicies() {
+    yield* AllPolicies;
+  }
+
+  private async getAuthorizationPoliciesManager() {
+    const authorizationPoliciesManager = new AuthorizationPoliciesManager<ITargetActor>();
+    await authorizationPoliciesManager.addPolicies(this.getAllAppAuthorizationPolicies());
+    return authorizationPoliciesManager;
   }
 }

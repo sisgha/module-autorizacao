@@ -1,4 +1,4 @@
-import { mapKeys, camelCase } from 'lodash';
+import { camelCase, mapKeys } from 'lodash';
 
 export const mapDbEventDataKeys = (data: any) => {
   if (data) {

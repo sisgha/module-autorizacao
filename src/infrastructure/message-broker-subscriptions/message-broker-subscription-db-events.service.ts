@@ -20,7 +20,6 @@ export class MessageBrokerSubscriptionDbEventsService implements OnModuleInit {
     //
     @Inject(APP_DATA_SOURCE_TOKEN)
     private appDataSource: DataSource,
-
     private messageBrokerContainerService: MessageBrokerContainerService,
   ) {}
 

@@ -28,38 +28,6 @@ export class AppAuthorizationPoliciesRunnerService {
     return fallback;
   }
 
-  private async buildMixedStatement(targetActor: ITargetActor, action: string, resource: string) {
-    const checkRoles = this.checkRoles.bind(this);
-
-    const deps: IFilterAttachedConstraintsForTargetActorDependencies = {
-      checkRoles,
-    };
-
-    return this.appAuthorizationPoliciesRepositoryService.buildMixedStatement(targetActor, action, resource, deps);
-  }
-
-  private async getResolution(
-    targetActor: ITargetActor,
-    action: string,
-    resource: string,
-    resourceId: string | null = null,
-  ): Promise<IResolution> {
-    const mixedStatement = await this.buildMixedStatement(targetActor, action, resource);
-
-    const resolver = await this.appAuthorizationPoliciesResolversService.buildResolutionResolver(
-      targetActor,
-      action,
-      resource,
-      resourceId,
-      mixedStatement,
-    );
-
-    return {
-      resolver,
-      mixedStatement,
-    };
-  }
-
   async getResolutionDatabase(
     targetActor: ITargetActor,
     action: string,
@@ -108,5 +76,37 @@ export class AppAuthorizationPoliciesRunnerService {
 
       yield allowedResourceResponse;
     }
+  }
+
+  private async buildMixedStatement(targetActor: ITargetActor, action: string, resource: string) {
+    const checkRoles = this.checkRoles.bind(this);
+
+    const deps: IFilterAttachedConstraintsForTargetActorDependencies = {
+      checkRoles,
+    };
+
+    return this.appAuthorizationPoliciesRepositoryService.buildMixedStatement(targetActor, action, resource, deps);
+  }
+
+  private async getResolution(
+    targetActor: ITargetActor,
+    action: string,
+    resource: string,
+    resourceId: string | null = null,
+  ): Promise<IResolution> {
+    const mixedStatement = await this.buildMixedStatement(targetActor, action, resource);
+
+    const resolver = await this.appAuthorizationPoliciesResolversService.buildResolutionResolver(
+      targetActor,
+      action,
+      resource,
+      resourceId,
+      mixedStatement,
+    );
+
+    return {
+      resolver,
+      mixedStatement,
+    };
   }
 }

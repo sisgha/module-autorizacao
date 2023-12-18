@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import { AllowedResourceResponse, CanResponse, GenericCanRequest, UsuarioCanRequest } from '@sisgea/autorizacao-client';
-import { Observable, from } from 'rxjs';
+import { from, Observable } from 'rxjs';
 import { SisgeaAutorizacaoService } from './sisgea-autorizacao.service';
 
 @Controller()

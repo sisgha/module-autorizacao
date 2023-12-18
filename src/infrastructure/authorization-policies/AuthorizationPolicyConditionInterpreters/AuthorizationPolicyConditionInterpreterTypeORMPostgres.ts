@@ -36,20 +36,6 @@ export class AuthorizationPolicyConditionInterpreterTypeORMPostgres {
     this.#params_counter = initialParamsCounter;
   }
 
-  private getResourceAttributeProjection(alias: string, attribute: string) {
-    return getTypeORMPostgresResourceAttributeProjection(alias, attribute, this.databaseAppResources, this.aliasesMappings);
-  }
-
-  private attachParam(value: any) {
-    const key = `param_${++this.#params_counter}`;
-
-    this.#params.set(key, value);
-
-    return {
-      key,
-    };
-  }
-
   get params() {
     return {
       ...Object.fromEntries(this.#params),
@@ -193,6 +179,20 @@ export class AuthorizationPolicyConditionInterpreterTypeORMPostgres {
     return {
       sql,
       params,
+    };
+  }
+
+  private getResourceAttributeProjection(alias: string, attribute: string) {
+    return getTypeORMPostgresResourceAttributeProjection(alias, attribute, this.databaseAppResources, this.aliasesMappings);
+  }
+
+  private attachParam(value: any) {
+    const key = `param_${++this.#params_counter}`;
+
+    this.#params.set(key, value);
+
+    return {
+      key,
     };
   }
 }

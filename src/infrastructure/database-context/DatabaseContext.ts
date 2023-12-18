@@ -1,6 +1,6 @@
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { GenericProjection, IAppResourceKey } from '../../domain';
-import { IProjectionUsuarioRepository, getProjectionUsuarioRepository } from '../database/repositories/projection_usuario.repository';
+import { getProjectionUsuarioRepository, IProjectionUsuarioRepository } from '../database/repositories/projection_usuario.repository';
 
 export class DatabaseContext {
   constructor(readonly ds: DataSource | EntityManager) {}
@@ -21,12 +21,12 @@ export class DatabaseContext {
     }
   }
 
-  static new(ds: DataSource | EntityManager) {
-    return new DatabaseContext(ds);
-  }
-
   get projectionUsuarioRepository() {
     return getProjectionUsuarioRepository(this.ds);
+  }
+
+  static new(ds: DataSource | EntityManager) {
+    return new DatabaseContext(ds);
   }
 
   getProjectionRepositoryForResource(resource: IAppResourceKey.USUARIO): IProjectionUsuarioRepository;
